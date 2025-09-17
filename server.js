@@ -9,12 +9,19 @@ app.use("/", async (req, res) => {
 
     const response = await fetch(targetUrl, {
       method: req.method,
-      headers: req.headers,
+      headers: {
+        ...req.headers,
+        "host": "chatgpt.com"
+      },
     });
 
-    // Pass response back
-    const body = await response.text();
-    res.status(response.status).send(body);
+    // Set headers from the target response
+    response.headers.forEach((value, key) => {
+      res.setHeader(key, value);
+    });
+
+    // Stream the response body
+    response.body.pipe(res);
   } catch (err) {
     console.error("Proxy error:", err);
     res.status(500).send("Proxy error");
